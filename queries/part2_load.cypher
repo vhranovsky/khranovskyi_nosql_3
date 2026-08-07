@@ -11,8 +11,8 @@ LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/vhranovsky/khranov
 MERGE (m:Movie {movieId: toInteger(row.movieId)})
 ON CREATE SET m.title = row.title
 WITH m, row
-UNWIND split(row.genres, '|') AS genreName
-MERGE (g:Genre {name: genreName})
+UNWIND split(row.genres, '|') AS genre_name
+MERGE (g:Genre {name: genre_name})
 MERGE (m)-[:HAS_GENRE]->(g);
 
 // 3. Створення індексів (ОБОВ'ЯЗКОВО до завантаження ребер)
