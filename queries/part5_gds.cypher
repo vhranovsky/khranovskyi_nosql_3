@@ -63,25 +63,25 @@ YIELD graphName, nodeCount, relationshipCount;
 // Крок 3: Запуск Louvain у режимі WRITE (Записуємо ID кластера у вузли User)
 CALL gds.louvain.write('userSimilarity', {
   relationshipWeightProperty: 'weight',
-  writeProperty: 'communityId'
+  writeProperty: 'community_id'
 })
 YIELD communityCount, modularities;
 
 // Крок 4.1: Виведення 10 найбільших кластерів
 MATCH (u:User)
-WHERE u.communityId IS NOT NULL
-WITH u.communityId AS community, count(u) AS cluster_size
+WHERE u.community_id IS NOT NULL
+WITH u.community_id AS community, count(u) AS cluster_size
 ORDER BY cluster_size DESC
 LIMIT 10
 RETURN community, cluster_size;
 
 // Крок 4.2: Аналіз смаків - Топ-3 жанри для кожного з 10 найбільших кластерів
 MATCH (u:User)
-WHERE u.communityId IS NOT NULL
-WITH u.communityId AS community, count(u) AS cluster_size
+WHERE u.community_id IS NOT NULL
+WITH u.community_id AS community, count(u) AS cluster_size
 ORDER BY cluster_size DESC
 LIMIT 10
-MATCH (u:User {communityId: community})-[r:RATED]->(m:Movie)-[:HAS_GENRE]->(g:Genre)
+MATCH (u:User {community_id: community})-[r:RATED]->(m:Movie)-[:HAS_GENRE]->(g:Genre)
 WHERE r.rating >= 4.0
 WITH community, cluster_size, g.name AS genre, count(r) AS genre_count
 ORDER BY community, genre_count DESC
@@ -89,10 +89,10 @@ WITH community, cluster_size, collect(genre)[0..3] AS top_genres
 RETURN community, cluster_size, top_genres
 ORDER BY cluster_size DESC;
 
-// Крок 5: Очищення (Видаляємо проєкцію, ребра та зчищаємо властивість communityId)
+// Крок 5: Очищення (Видаляємо проєкцію, ребра та зчищаємо властивість community_id)
 CALL gds.graph.drop('userSimilarity') YIELD graphName;
 MATCH ()-[sim:SIMILAR]-() DELETE sim;
-MATCH (u:User) WHERE u.communityId IS NOT NULL REMOVE u.communityId;
+MATCH (u:User) WHERE u.community_id IS NOT NULL REMOVE u.community_id;
 
 // =====================================================================
 // ЧАСТИНА 5.3: Алгоритм Дейкстри (Пошук найкоротшого шляху)
